@@ -8,7 +8,7 @@ Rough plan
 ------
 1. Promt amount of words to be made
 2. Allow user to input first two words (all lowercase string
-4. Search for the two words in the (Column = starting string, Row = following string)
+4. Search for the two words in the (rows = starting string, columns = following string)
 5. Display words then set the last two generated words to the string
 6. loop back 
 7. etc...
