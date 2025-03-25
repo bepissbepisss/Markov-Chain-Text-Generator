@@ -88,7 +88,7 @@ int main()
    
     cout << "Enter the first word: ";
     cin >> firstWord;
-
+    
     while (firstWord != generatedWord)
     {
          getline(file, line);
@@ -106,7 +106,7 @@ int main()
     }
     const int loctionOfWord = i;
     file.close();
-    for(int k = 1; k < nbOfRows; k++)
+    for(int k = 0; k < nbOfRows ; k++)
     {
         i = loctionOfWord;
         ifstream weights("weights.csv");
@@ -122,13 +122,12 @@ int main()
         }
 
         weights >> probability ;
-    
         if(probability != 0)
         {
-            weights.close();
-            ifstream weights1("weights.csv");
             
-            for(int l = 0; l < k; l++)
+            ifstream weights1("weights.csv");
+            for(int l = 1; l < k; l++)
+            skipUntilComma(weights1);
             {
                 skipUntilComma(weights1);
             }
@@ -139,6 +138,7 @@ int main()
             vectorNames.push_back(wordName);
             rowNumber++;
             weights1.close();
+            
         }
         
         weights.close();
@@ -146,10 +146,11 @@ int main()
     random_device rd;
     default_random_engine generator(rd());
     int chosenIndex = chooseOutcome(vectorProbs, generator);
-    cout << vectorNames[chosenIndex];
+    cout << vectorNames[chosenIndex] << endl << vectorProbs[chosenIndex] << endl;
     firstWord = vectorNames[chosenIndex];
     vectorNames.clear();
     vectorProbs.clear();
+    
     
     return 0;
 }
