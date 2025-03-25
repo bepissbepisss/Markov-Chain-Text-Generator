@@ -77,6 +77,8 @@ int main()
     string generatedWord = "";
     string line = "";
     string firstWord = "";
+    string secondWord = "";
+    string totalWord = "";
     string probabilities = "";
     string wordName="";
     int location = 0;
@@ -89,12 +91,16 @@ int main()
 
     cout << "Enter the first word: ";
     cin >> firstWord;
-    cout << firstWord << " ";
+    cout << "Enter the second word: ";
+    cin >> secondWord;
+    totalWord = firstWord + " " + secondWord;
+
+    cout << totalWord<< " ";
     for(int o=0 ; o< nbOfWords;o++)
     {
         ifstream file("weights.csv");
         i = 0;
-    while (firstWord != generatedWord)
+    while (totalWord != generatedWord)
     {
          getline(file, line);
          location = line.find(',');
@@ -155,7 +161,7 @@ int main()
     vectorNames.clear();
     vectorProbs.clear();
 
-    firstWord = vectorNames[chosenIndex];
+    totalWord = secondWord + " " +vectorNames[chosenIndex];
     generatedWord = "";
 }
 
