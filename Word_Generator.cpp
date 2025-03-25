@@ -80,15 +80,19 @@ int main()
     string wordName="";
     int location = 0;
     int rowNumber = 0;
-    
-    ifstream file("weights.csv");
-    
-   int nbOfRows = numberOfRows();
-   
-   
+        
+    int nbOfRows = numberOfRows();
+    cout << "How many words do you want to generate? ";
+    int nbOfWords = 0;
+    cin >> nbOfWords;
+
     cout << "Enter the first word: ";
     cin >> firstWord;
-    
+    cout << firstWord << " ";
+    for(int o=0 ; o< nbOfWords;o++)
+    {
+        ifstream file("weights.csv");
+        i = 0;
     while (firstWord != generatedWord)
     {
          getline(file, line);
@@ -104,7 +108,7 @@ int main()
 
 
     }
-    const int loctionOfWord = i;
+    int loctionOfWord = i;
     file.close();
     for(int k = 0; k < nbOfRows ; k++)
     {
@@ -146,11 +150,14 @@ int main()
     random_device rd;
     default_random_engine generator(rd());
     int chosenIndex = chooseOutcome(vectorProbs, generator);
-    cout << vectorNames[chosenIndex] << endl << vectorProbs[chosenIndex] << endl;
-    firstWord = vectorNames[chosenIndex];
+    cout << vectorNames[chosenIndex] << " ";
     vectorNames.clear();
     vectorProbs.clear();
-    
-    
+
+    firstWord = vectorNames[chosenIndex];
+    generatedWord = "";
+}
+
+
     return 0;
 }
