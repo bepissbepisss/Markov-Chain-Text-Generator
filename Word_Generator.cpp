@@ -8,7 +8,6 @@
 #include <random>
 #include <ctime>
 
-// hello dany
 
 using namespace std;
 
@@ -91,9 +90,9 @@ int main()
 
     cout << "Enter the first word: ";
     cin >> firstWord;
-    cout << "Enter the second word: ";
-    cin >> secondWord;
-    totalWord = firstWord + " " + secondWord;
+    //cout << "Enter the second word: ";
+    // cin >> secondWord;
+    totalWord = firstWord ; // + " " + secondWord;
 
     cout << totalWord<< " ";
     for(int o=0 ; o< nbOfWords;o++)
@@ -161,7 +160,9 @@ int main()
     vectorNames.clear();
     vectorProbs.clear();
 
-    totalWord = secondWord + " " +vectorNames[chosenIndex];
+    // totalWord = secondWord + " " +vectorNames[chosenIndex];
+    totalWord = vectorNames[chosenIndex];
+
     generatedWord = "";
 }
 
