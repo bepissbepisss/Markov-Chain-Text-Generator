@@ -1,171 +1,146 @@
-
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <sstream>
 #include <vector>
-#include <iomanip>
 #include <random>
-#include <ctime>
-
+#include <algorithm>
 
 using namespace std;
 
-int chooseOutcome(const vector<float>& probs, default_random_engine& generator) 
-    {
-	vector<float> cumulativeProbs(probs.size());
-		cumulativeProbs[0] = probs[0];
-		for (int i = 1; i < probs.size(); i++) 
-        {
-			cumulativeProbs[i] = cumulativeProbs[i - 1] + probs[i];
-
-		}
-		uniform_real_distribution<float> distrubution(.0, 1);
-		double randomNum = distrubution(generator);
-
-		for (int i = 0; i < cumulativeProbs.size(); i++) 
-        {
-			if (randomNum <= cumulativeProbs[i]) 
-            {
-				return i;
-			}
-
-		}
-		return -1;
+int chooseOutcome(const vector<float>& probs, default_random_engine& generator) {
+    if (probs.empty()) {
+        cerr << "Error: No probabilities provided.\n";
+        return -1;
     }
 
-int numberOfRows()
-{
-    ifstream file("weights.csv");
-    string s = "";
-    int RowCount = 0;
-    while (!file.eof())
-    {
-        getline(file, s);
-        RowCount++;
+    vector<float> cumulativeProbs(probs.size());
+    cumulativeProbs[0] = probs[0];
+    for (size_t i = 1; i < probs.size(); ++i) {
+        cumulativeProbs[i] = cumulativeProbs[i - 1] + probs[i];
     }
-    
-    return RowCount;
+
+    uniform_real_distribution<float> distribution(0.0, 1.0);
+    float randomNum = distribution(generator);
+
+    for (size_t i = 0; i < cumulativeProbs.size(); ++i) {
+        if (randomNum <= cumulativeProbs[i]) {
+            return static_cast<int>(i);
+        }
+    }
+    return -1;
 }
 
-void skipUntilComma(ifstream& input)
-{
-    char temp='a';
-    while(temp != ',')
-    {
-        input >> temp; 
-    }
-
-}
- 
-void skipLine(ifstream& input, int numberOfRows)
-{
-    for(int i=0; i<numberOfRows; i++ ) 
-    {
-        skipUntilComma(input);
-    }
+string trim(const string& str) {
+    size_t start = str.find_first_not_of(" \t\r\n");
+    size_t end = str.find_last_not_of(" \t\r\n");
+    return (start == string::npos || end == string::npos) ? "" : str.substr(start, end - start + 1);
 }
 
-
-int main()
-{
-    
-    int i = 0;
-    vector<float> vectorProbs;
-    vector<string> vectorNames;
-    string generatedWord = "";
-    string line = "";
-    string firstWord = "";
-    string secondWord = "";
-    string totalWord = "";
-    string probabilities = "";
-    string wordName="";
-    int location = 0;
-    int rowNumber = 0;
-        
-    int nbOfRows = numberOfRows();
+int main() {
     cout << "How many words do you want to generate? ";
-    int nbOfWords = 0;
-    cin >> nbOfWords;
+    int wordCount;
+    cin >> wordCount;
 
-    cout << "Enter the first word: ";
-    cin >> firstWord;
-    //cout << "Enter the second word: ";
-    // cin >> secondWord;
-    totalWord = firstWord ; // + " " + secondWord;
+    cout << "Enter the first two words: ";
+    string firstWord, secondWord;
+    cin >> firstWord >> secondWord;
+    firstWord = trim(firstWord);
+    secondWord = trim(secondWord);
 
-    cout << totalWord<< " ";
-    for(int o=0 ; o< nbOfWords;o++)
-    {
-        ifstream file("weights.csv");
-        i = 0;
-    while (totalWord != generatedWord)
-    {
-         getline(file, line);
-         location = line.find(',');
-         generatedWord = line.substr(0, location);
-         probabilities = line.substr(location +1, line.length());
-         ++i;
-         if (i > nbOfRows + 1)
-         {
-             cout << "Unavailable word";
-             return 0; 
-         }
+    string currentPhrase = firstWord + " " + secondWord;
+    cout << firstWord << " " << secondWord << " ";
 
+    // Read column headers
+    ifstream headerFile("weights.csv");
+    string headerLine;
+    getline(headerFile, headerLine);
+    headerFile.close();
 
+    vector<string> columnHeaders;
+    stringstream ss(headerLine);
+    string token;
+    getline(ss, token, ','); // skip top-left cell
+    while (getline(ss, token, ',')) {
+        columnHeaders.push_back(trim(token));
     }
-    int loctionOfWord = i;
-    file.close();
-    for(int k = 0; k < nbOfRows ; k++)
-    {
-        i = loctionOfWord;
-        ifstream weights("weights.csv");
-        float probability;
-        for(;i > 1 ; i--)
-        {
-            skipLine(weights,nbOfRows);
-        }
 
-        for(int j = 0; j < k; j++)
-        {
-            skipUntilComma(weights);
-        }
-
-        weights >> probability ;
-        if(probability != 0)
-        {
-            
-            ifstream weights1("weights.csv");
-            for(int l = 1; l < k; l++)
-            skipUntilComma(weights1);
-            {
-                skipUntilComma(weights1);
-            }
-            weights1 >> wordName;     
-            location = wordName.find(',');
-            wordName = wordName.substr(0, location);
-            vectorProbs.push_back(probability);
-            vectorNames.push_back(wordName);
-            rowNumber++;
-            weights1.close();
-            
-        }
-        
-        weights.close();
-    }
     random_device rd;
     default_random_engine generator(rd());
-    int chosenIndex = chooseOutcome(vectorProbs, generator);
-    cout << vectorNames[chosenIndex] << " ";
-    vectorNames.clear();
-    vectorProbs.clear();
 
-    // totalWord = secondWord + " " +vectorNames[chosenIndex];
-    totalWord = vectorNames[chosenIndex];
+    for (int step = 0; step < wordCount; ++step) {
+        ifstream file("weights.csv");
+        string line, rowLabel;
+        int foundRow = -1;
+        int lineNumber = 0;
 
-    generatedWord = "";
-}
+        getline(file, line); // skip header
+        while (getline(file, line)) {
+            stringstream rowStream(line);
+            getline(rowStream, rowLabel, ',');
+            rowLabel = trim(rowLabel);
+            if (rowLabel == currentPhrase) {
+                foundRow = lineNumber;
+                break;
+            }
+            lineNumber++;
+        }
+        file.close();
 
+        // If not found, fallback to just last word
+        if (foundRow == -1) {
+            currentPhrase = secondWord;
+            lineNumber = 0;
+            file.open("weights.csv");
+            getline(file, line); // skip header
+            while (getline(file, line)) {
+                stringstream rowStream(line);
+                getline(rowStream, rowLabel, ',');
+                rowLabel = trim(rowLabel);
+                if (rowLabel == currentPhrase) {
+                    foundRow = lineNumber;
+                    break;
+                }
+                lineNumber++;
+            }
+            file.close();
+        }
 
+        if (foundRow == -1) {
+            cout << "[unknown] ";
+            break;
+        }
+
+        // Get probabilities from that row
+        file.open("weights.csv");
+        getline(file, line); // skip header
+        for (int i = 0; i < foundRow; ++i) {
+            getline(file, line);
+        }
+        getline(file, line);
+        file.close();
+
+        stringstream rowStream(line);
+        getline(rowStream, token, ','); // skip row label
+        vector<float> probs;
+        while (getline(rowStream, token, ',')) {
+            token = trim(token);
+            probs.push_back(token.empty() ? 0.0f : stof(token));
+        }
+
+        int index = chooseOutcome(probs, generator);
+        if (index >= 0 && index < columnHeaders.size()) {
+            string nextWord = columnHeaders[index];
+            cout << nextWord << " ";
+            firstWord = secondWord;
+            secondWord = nextWord;
+            currentPhrase = firstWord + " " + secondWord;
+        } else {
+            cout << "[none] ";
+            break;
+        }
+    }
+
+    cout << endl;
     return 0;
 }
